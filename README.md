@@ -1,4 +1,4 @@
-<img src="docs/banner.svg" alt="Aveli, a browser agent built with Browser Use and TypeSafe" width="100%" />
+<img src="docs/banner.svg" alt="Aveli indexed browser agent" width="100%" />
 
 # Aveli
 [![CI](https://github.com/pkmdev-sec/aveli/actions/workflows/ci.yml/badge.svg)](https://github.com/pkmdev-sec/aveli/actions/workflows/ci.yml)
@@ -134,7 +134,7 @@ The full report records model versions, source hashes, timings, failures, and me
 | Agent loop | [`aveli/agent.py`](aveli/agent.py) |
 | Browser snapshot and execution | [`aveli/browser.py`](aveli/browser.py), [`aveli/snapshot.js`](aveli/snapshot.js) |
 | Model boundary | [`aveli/model.py`](aveli/model.py) |
-| Full architecture and call graph | [`docs/codebase-graph.md`](docs/codebase-graph.md) |
+| Production worker | [`aveli/runner.py`](aveli/runner.py), [`aveli/worker.py`](aveli/worker.py) |
 
 ## Development
 
@@ -148,8 +148,10 @@ uv build
 
 Tests do not call paid APIs. Live examples and recording scripts do. Read [docs/development.md](docs/development.md) before running browser checks or recordings.
 
+Contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
+
 ## Documentation
 
-[Documentation index](docs/README.md) · [Design](docs/design.md) · [Configuration and development](docs/development.md) · [Performance](docs/performance.md) · [Code graph](docs/codebase-graph.md) · [Internal production](docs/internal-production.md)
+[Documentation index](docs/README.md) · [Design](docs/design.md) · [Configuration and development](docs/development.md) · [Performance](docs/performance.md) · [Internal production](docs/internal-production.md)
 
 Built with [Browser Use](https://github.com/browser-use/browser-use), [Browser Harness](https://github.com/browser-use/browser-harness), and [TypeSafe speculative fan-out](https://docs.typesafe.ai/patterns/fan-out).

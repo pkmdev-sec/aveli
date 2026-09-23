@@ -1,6 +1,6 @@
 # Documentation
 
-Use this page to find the right level of detail.
+Use this index to find product documentation and recorded evidence.
 
 ## Start here
 
@@ -9,23 +9,9 @@ Use this page to find the right level of detail.
 - [Performance](performance.md) records the current measurements, methods, and limits.
 - [Internal production](internal-production.md) describes the fail-closed worker and its deployment controls.
 
-## Architecture reference
-
-- [Codebase graph](codebase-graph.md) explains modules, entry points, call paths, and deployment relationships.
-- [Generated source inventory](codegraph/inventory.md) lists indexed files, imports, and definitions.
-- [Generated call relationships](codegraph/calls.md) records static call and construction edges.
-- [Graph verification](codegraph/verification.md) lists the commands used to refresh the graph.
-
-Generated graph edges are navigation aids. They do not prove runtime behavior. Use source code and behavior checks for operational decisions.
-
 ## Recorded evidence
 
-- [Prepared-step performance](performance-prepared.md) preserves results from the earlier prepared-step prototype.
-- `measurement.json`, `flights-measurement.json`, `full-speed-measurement.json`, and related files contain raw measurement records.
-- `demo.mp4`, `demo.gif`, and the PNG images show recorded runs.
-
-Historical hashes, model identifiers, and commit-pinned links remain unchanged. They identify the code and providers used for those runs.
-
-## Project records
-
-The repository also keeps plans, release gates, and review snapshots. These files describe the revision or decision that produced them. They are not a substitute for the current README, design guide, tests, or source code.
+- [Demo video](demo.mp4) and [animated preview](demo.gif) show the current Google Flights run at original speed.
+- [Flight measurement](flights-measurement.json) records the demonstrated run.
+- [Matched measurements](full-speed-measurement.json) contain the comparison runs summarized in the performance report.
+- [Final result](flights-result.png) shows the independently verified page state.

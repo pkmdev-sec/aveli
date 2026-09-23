@@ -16,7 +16,10 @@ source = args.source.resolve()
 state = json.loads((source / "state.json").read_text())
 assert state["verification"]["passed"] and not state["recording_errors"]
 frames = [(0, Image.open(source / "frames/000000.jpg").convert("RGB"))]
-frames += sorted((int(p.stem), Image.open(p).convert("RGB")) for p in (source / "screencast").glob("*.jpg"))
+frames += sorted(
+    (int(p.stem), Image.open(p).convert("RGB"))
+    for p in (source / "screencast").glob("*.jpg")
+)
 end = state["elapsed_ms"]
 folder = source / "video-frames"
 folder.mkdir(parents=True, exist_ok=False)
@@ -45,12 +48,22 @@ for i in range(round((end + 500) * 30 / 1000)):
     screenshot = next(im for ts, im in reversed(frames) if ts <= t)
     canvas = Image.new("RGB", (1536, 1000), "#f3f4ec")
     d = ImageDraw.Draw(canvas)
-    d.text((36, 26), "browser use", font=font(23, True), fill=ink)
-    d.text((186, 27), "×  TypeSafe", font=font(22), fill=muted)
+    d.text((36, 26), "AVELI", font=font(23, True), fill=ink)
+    d.text((122, 27), "indexed browser agent", font=font(18), fill=muted)
     d.rounded_rectangle((1287, 24, 1499, 59), radius=17, fill="#dfebd9")
     d.text((1310, 32), "REAL WEB  ·  1× SPEED", font=font(14, True), fill=green)
-    d.text((36, 80), f"Zürich → London. In {end / 1000:.1f} seconds.", font=font(43, True), fill=ink)
-    d.text((38, 139), "One goal. Dynamic elements. LLM-generated text.", font=font(20), fill=muted)
+    d.text(
+        (36, 80),
+        f"Zürich → London. In {end / 1000:.1f} seconds.",
+        font=font(43, True),
+        fill=ink,
+    )
+    d.text(
+        (38, 139),
+        "One goal. Dynamic elements. LLM-generated text.",
+        font=font(20),
+        fill=muted,
+    )
     d.rounded_rectangle((35, 191, 1157, 943), radius=14, fill="#202124")
     for j, c in enumerate(["#de8278", "#d6bd6e", "#8dbd8a"]):
         d.ellipse((54 + j * 19, 205, 63 + j * 19, 214), fill=c)
@@ -62,16 +75,33 @@ for i in range(round((end + 500) * 30 / 1000)):
     d.text((1193, 307), "SECONDS ELAPSED", font=font(13, True), fill=muted)
     history = [h for h in state["history"] if h["executed_ms"] <= t]
     for j, (label, key) in enumerate(steps):
-        done = any(h["action"] == key or (key == "Done. Search" and h["action"].startswith(key)) for h in history)
+        done = any(
+            h["action"] == key
+            or (key == "Done. Search" and h["action"].startswith(key))
+            for h in history
+        )
         y = 370 + j * 54
         d.ellipse((1194, y, 1218, y + 24), fill=green if done else "#e0e4d9")
         if done:
-            d.line([(1200, y + 12), (1204, y + 16), (1212, y + 8)], fill="white", width=2)
+            d.line(
+                [(1200, y + 12), (1204, y + 16), (1212, y + 8)], fill="white", width=2
+            )
         d.text((1236, y - 1), label, font=font(21, done), fill=ink if done else muted)
-    waiting = t >= next(h["executed_ms"] for h in state["history"] if h["action"] == "Search") and t < end
+    waiting = (
+        t >= next(h["executed_ms"] for h in state["history"] if h["action"] == "Search")
+        and t < end
+    )
     final = t >= end
-    d.rounded_rectangle((1189, 670, 1499, 789), radius=14, fill="#dfeeda" if final else "#e7e9df")
-    title = "Flights found" if final else "Waiting for Google…" if waiting else "Choose. Act. Repeat."
+    d.rounded_rectangle(
+        (1189, 670, 1499, 789), radius=14, fill="#dfeeda" if final else "#e7e9df"
+    )
+    title = (
+        "Flights found"
+        if final
+        else "Waiting for Google…"
+        if waiting
+        else "Choose. Act. Repeat."
+    )
     d.text((1209, 691), title, font=font(22, True), fill=green if final else ink)
     subtitle = (
         "Route + date verified"
@@ -135,4 +165,10 @@ subprocess.run(
     ],
     check=True,
 )
-print("Rendered", len(frames), "source frames at original timing:", end, "ms, plus a 500ms end hold.")
+print(
+    "Rendered",
+    len(frames),
+    "source frames at original timing:",
+    end,
+    "ms, plus a 500ms end hold.",
+)
