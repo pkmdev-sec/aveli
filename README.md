@@ -1,25 +1,13 @@
-<img src="docs/banner.svg" alt="Aveli indexed browser agent" width="100%" />
-
-# Aveli
+<img src="docs/aveli-logo.png" alt="Aveli pixel logo" width="960" />
 [![CI](https://github.com/pkmdev-sec/aveli/actions/workflows/ci.yml/badge.svg)](https://github.com/pkmdev-sec/aveli/actions/workflows/ci.yml)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![MIT license](https://img.shields.io/badge/license-MIT-2A743F)](LICENSE)
 
-```text
-   A    V   V  EEEEE  L      IIIII
-  A A   V   V  E      L        I
- AAAAA  V   V  EEEE   L        I
- A   A   V V   E      L        I
- A   A    V    EEEEE  LLLLL  IIIII
-```
-
 Aveli is a Python browser agent that lets models choose from controls already found on the page. [TypeSafe's Jev](https://docs.typesafe.ai/introduction) selects an operation and a compatible target. A separate text model writes content only for `TYPE_TEXT`.
 
-The recorded Google Flights example completes a Zurich-to-London search in 7.073 seconds. It includes generated city names, browser work, and page-load waits.
+The measured Google Flights run completed a Zurich-to-London search in 7.073 seconds. The raw measurements include model calls, browser work, and page-load waits.
 
-<a href="docs/demo.mp4"><img src="docs/demo.gif" alt="Aveli completing a Google Flights search at original speed" width="100%" /></a>
-
-[Watch the MP4](docs/demo.mp4) · [Read the measurements](docs/performance.md) · [Inspect the agent loop](aveli/agent.py)
+[Read the measurements](docs/performance.md) · [Inspect the agent loop](aveli/agent.py)
 
 ## How Aveli works
 
@@ -123,7 +111,7 @@ The inspector is not a production service. Bounded internal jobs use a separate 
 
 ## Evidence
 
-The current video records one Google Flights task at original speed. All six matched comparison runs passed, but they cover one task on one browser profile. They do not establish general browser-agent reliability.
+Six matched comparison runs passed, but they cover one task on one browser profile. They do not establish general browser-agent reliability.
 
 The full report records model versions, source hashes, timings, failures, and measurement boundaries in [docs/performance.md](docs/performance.md).
 

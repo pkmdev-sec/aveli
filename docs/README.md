@@ -11,7 +11,5 @@ Use this index to find product documentation and recorded evidence.
 
 ## Recorded evidence
 
-- [Demo video](demo.mp4) and [animated preview](demo.gif) show the current Google Flights run at original speed.
-- [Flight measurement](flights-measurement.json) records the demonstrated run.
+- [Flight measurement](flights-measurement.json) records the measured Google Flights run.
 - [Matched measurements](full-speed-measurement.json) contain the comparison runs summarized in the performance report.
-- [Final result](flights-result.png) shows the independently verified page state.

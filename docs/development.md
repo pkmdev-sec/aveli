@@ -61,7 +61,7 @@ uv run python scripts/check_guards.py
 
 The guard suite uses local fixtures and does not call model APIs.
 
-## Record and render a run
+## Record a run
 
 Live examples and recording scripts call paid model APIs.
 
@@ -71,13 +71,7 @@ Record a new Google Flights run into a new directory:
 uv run --env-file .env python scripts/record_flights.py artifacts/flights/new-run
 ```
 
-Render the verified recording at its original speed:
-
-```bash
-uv run python scripts/render_demo.py artifacts/flights/new-run
-```
-
-The renderer crops the Google account strip. Raw recordings and credentials remain ignored by Git.
+Raw recordings and credentials remain ignored by Git. Publish media only when the recording and its visual design were produced for Aveli and the final page was verified independently.
 
 ## Probe Moli compatibility
 

@@ -30,8 +30,16 @@ def load_environment():
 
 
 def response_state():
-    state = AGENT.snapshot() if AGENT else {"page": None, "status": "idle", "history": [], "decision": None}
-    return {**state, "text_model": os.environ.get("TEXT_MODEL", "deepseek-chat"), "max_steps": MAX_STEPS}
+    state = (
+        AGENT.snapshot()
+        if AGENT
+        else {"page": None, "status": "idle", "history": [], "decision": None}
+    )
+    return {
+        **state,
+        "text_model": os.environ.get("TEXT_MODEL", "deepseek-chat"),
+        "max_steps": MAX_STEPS,
+    }
 
 
 def close_browser():
@@ -57,7 +65,9 @@ def command(name, body):
             else f"{ORIGIN}/fixture.html?scenario={scenario}",
             goal,
             screenshots=True,
-            record_dir=Path.cwd() / "artifacts" / "frames" if body.get("record") else None,
+            record_dir=Path.cwd() / "artifacts" / "frames"
+            if body.get("record")
+            else None,
         )
         AGENT.state["scenario"] = scenario
     else:
@@ -85,10 +95,6 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/api/state":
             with LOCK:
                 return self.send(200, json.dumps(response_state()))
-        if path == "/demo.mp4":
-            video = ROOT.parent / "docs" / "demo.mp4"
-            if video.exists():
-                return self.send(200, video.read_bytes(), "video/mp4")
         files = {
             "/": ("index.html", "text/html"),
             "/app.js": ("app.js", "text/javascript"),
@@ -109,7 +115,9 @@ class Handler(BaseHTTPRequestHandler):
         ):
             return self.send(403, json.dumps({"error": "Local demo requests only"}))
         if not LOCK.acquire(blocking=False):
-            return self.send(409, json.dumps({"error": "A browser step is already running"}))
+            return self.send(
+                409, json.dumps({"error": "A browser step is already running"})
+            )
         try:
             length = int(self.headers.get("Content-Length", "0"))
             if not 0 < length < 8192:
@@ -120,7 +128,14 @@ class Handler(BaseHTTPRequestHandler):
         except (ValueError, RuntimeError, TimeoutError) as error:
             self.send(400, json.dumps({"error": str(error)}))
         except Exception:
-            self.send(500, json.dumps({"error": "Local demo failed; no automatic retry. Reset to recover."}))
+            self.send(
+                500,
+                json.dumps(
+                    {
+                        "error": "Local demo failed; no automatic retry. Reset to recover."
+                    }
+                ),
+            )
         finally:
             LOCK.release()
 
