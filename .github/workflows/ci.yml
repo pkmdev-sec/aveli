@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
+        with:
+          version: "0.10.4"
+          enable-cache: true
+      - run: uv sync --frozen --all-groups
+      - run: uv run ruff check .
+      - run: uv run pytest
+      - run: node --check aveli/static/app.js
+      - run: node --check aveli/snapshot.js
+      - run: uv build
+      - run: uv run python scripts/smoke_worker.py
+      - run: uv run python scripts/check_vulnerabilities.py
+      - run: uv run python scripts/check_secrets.py
+
+  browser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
+        with:
+          version: "0.10.4"
+          enable-cache: true
+      - run: uv sync --frozen --all-groups
+      - name: Real Chrome guard suite in an ephemeral profile
+        env:
+          AVELI_CHROME_PATH: /usr/bin/google-chrome
+        run: uv run python scripts/run_isolated_checks.py
+      - name: Prove loopback cannot bypass the browser allowlist
+        env:
+          AVELI_CHROME_PATH: /usr/bin/google-chrome
+        run: uv run python scripts/check_network_isolation.py
+
+  container:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - name: Verify deployment controls
+        run: python scripts/check_deployment.py
+      - name: Build immutable worker image
+        run: docker build --file deploy/Dockerfile --tag aveli-internal:${{ github.sha }} .
+      - name: Record container content ID
+        run: |
+          IMAGE_ID=$(docker image inspect --format '{{.Id}}' aveli-internal:${{ github.sha }})
+          echo "Container content ID: ${IMAGE_ID}" | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Run container preflight
+        run: docker run --rm --entrypoint python aveli-internal:${{ github.sha }} scripts/container_healthcheck.py

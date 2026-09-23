@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Aveli codebase review</title>
+  <style>
+    :root {
+      --ink: #172235;
+      --muted: #5d6878;
+      --paper: #f7f5ef;
+      --panel: #fffdf8;
+      --line: #d9d4c7;
+      --blue: #145da0;
+      --blue-soft: #e7f1f9;
+      --green: #177156;
+      --green-soft: #e7f5ef;
+      --amber: #a25a00;
+      --amber-soft: #fff0d6;
+      --red: #a73535;
+      --red-soft: #fae9e7;
+      --violet: #6650a4;
+      --shadow: 0 16px 50px rgba(23, 34, 53, 0.08);
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 5%, rgba(20, 93, 160, 0.10), transparent 27rem),
+        radial-gradient(circle at 92% 2%, rgba(23, 113, 86, 0.08), transparent 24rem),
+        var(--paper);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.62;
+    }
+    a { color: var(--blue); text-underline-offset: 3px; }
+    a:hover { text-decoration-thickness: 2px; }
+    code, pre, .eyebrow, .tag, .metric strong, .path {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+    code {
+      padding: 0.12rem 0.35rem;
+      border: 1px solid #dfdbcf;
+      border-radius: 5px;
+      background: #f4f1e9;
+      font-size: 0.88em;
+    }
+    .shell { width: min(1240px, calc(100% - 32px)); margin: 0 auto; }
+    .hero { padding: 58px 0 34px; }
+    .eyebrow {
+      margin: 0 0 12px;
+      color: var(--blue);
+      font-size: 0.76rem;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+    h1, h2, h3 { line-height: 1.15; letter-spacing: -0.025em; }
+    h1 { max-width: 900px; margin: 0; font-size: clamp(2.35rem, 6vw, 5.5rem); font-weight: 780; }
+    h2 { margin: 0 0 18px; font-size: clamp(1.7rem, 3vw, 2.55rem); }
+    h3 { margin: 0 0 10px; font-size: 1.18rem; }
+    .lede { max-width: 860px; margin: 24px 0; color: #344154; font-size: clamp(1.08rem, 2vw, 1.38rem); }
+    .verdict {
+      display: grid;
+      grid-template-columns: 1.25fr 1fr;
+      gap: 16px;
+      margin-top: 30px;
+    }
+    .verdict > div {
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 253, 248, 0.86);
+      box-shadow: var(--shadow);
+    }
+    .verdict .yes { border-top: 5px solid var(--green); }
+    .verdict .no { border-top: 5px solid var(--red); }
+    .verdict p { margin: 6px 0 0; color: var(--muted); }
+    .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 18px; }
+    .metric { padding: 16px 18px; border: 1px solid var(--line); border-radius: 14px; background: rgba(255,255,255,0.62); }
+    .metric strong { display: block; color: var(--blue); font-size: 1.65rem; }
+    .metric span { color: var(--muted); font-size: 0.88rem; }
+    .layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 44px; align-items: start; padding-bottom: 80px; }
+    nav {
+      position: sticky;
+      top: 18px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(255, 253, 248, 0.94);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+    }
+    nav strong { display: block; margin-bottom: 9px; font-size: 0.84rem; }
+    nav a { display: block; padding: 7px 8px; border-radius: 7px; color: #344154; text-decoration: none; font-size: 0.9rem; }
+    nav a:hover, nav a:focus-visible { color: var(--blue); background: var(--blue-soft); outline: none; }
+    main { min-width: 0; }
+    section { scroll-margin-top: 22px; padding: 38px 0; border-top: 1px solid var(--line); }
+    section:first-child { border-top: 0; }
+    .intro-grid, .two-col, .use-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .card {
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: 0 8px 30px rgba(23, 34, 53, 0.04);
+    }
+    .card p:last-child { margin-bottom: 0; }
+    .tag {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 99px;
+      background: var(--blue-soft);
+      color: var(--blue);
+      font-size: 0.71rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .tag.observed { color: var(--green); background: var(--green-soft); }
+    .tag.recommend { color: var(--violet); background: #eee9fb; }
+    .tag.limit { color: var(--amber); background: var(--amber-soft); }
+    .diagram {
+      overflow-x: auto;
+      margin-top: 18px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fbfaf6;
+    }
+    .diagram svg { display: block; width: 100%; min-width: 720px; height: auto; }
+    .diagram figcaption { max-width: 850px; margin-top: 12px; color: var(--muted); font-size: 0.88rem; }
+    .strengths { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+    .strength { padding: 19px; border-left: 4px solid var(--green); border-radius: 0 14px 14px 0; background: var(--green-soft); }
+    .strength p { margin: 7px 0 0; color: #315a4c; font-size: 0.92rem; }
+    .filters { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 20px; }
+    .filters button {
+      padding: 8px 13px;
+      border: 1px solid var(--line);
+      border-radius: 99px;
+      color: var(--ink);
+      background: var(--panel);
+      cursor: pointer;
+      font: inherit;
+      font-size: 0.88rem;
+    }
+    .filters button[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: white; }
+    .finding { margin: 12px 0; padding: 0; overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); }
+    .finding-head { display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: start; padding: 20px 22px 12px; }
+    .severity { min-width: 72px; padding: 5px 8px; border-radius: 8px; text-align: center; font: 800 0.74rem/1.4 ui-monospace, monospace; text-transform: uppercase; }
+    .severity.high { color: var(--red); background: var(--red-soft); }
+    .severity.medium { color: var(--amber); background: var(--amber-soft); }
+    .severity.low { color: var(--blue); background: var(--blue-soft); }
+    .finding h3 { margin: 2px 0 4px; }
+    .finding .summary { margin: 0; color: var(--muted); }
+    .finding-body { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; padding: 0 22px 20px; }
+    .finding-body p { margin: 0; }
+    details { margin-top: 14px; border-top: 1px solid var(--line); }
+    summary { padding: 12px 22px; color: var(--blue); cursor: pointer; font-weight: 700; }
+    details .evidence { padding: 0 22px 18px; color: var(--muted); font-size: 0.9rem; }
+    .use-card { position: relative; padding-top: 48px; }
+    .fit { position: absolute; top: 17px; left: 22px; }
+    .fit.strong { color: var(--green); background: var(--green-soft); }
+    .fit.conditional { color: var(--amber); background: var(--amber-soft); }
+    .fit.poor { color: var(--red); background: var(--red-soft); }
+    .steps { counter-reset: step; display: grid; gap: 12px; padding: 0; list-style: none; }
+    .steps li { counter-increment: step; display: grid; grid-template-columns: 38px 1fr; gap: 12px; padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); }
+    .steps li::before { content: counter(step); display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; color: white; background: var(--blue); font-weight: 800; }
+    pre { overflow-x: auto; padding: 18px; border-radius: 14px; color: #edf4fb; background: #142235; font-size: 0.82rem; line-height: 1.55; }
+    .checks { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .check-list { margin: 0; padding: 0; list-style: none; }
+    .check-list li { position: relative; padding: 7px 0 7px 28px; }
+    .check-list li::before { position: absolute; left: 0; content: "✓"; color: var(--green); font-weight: 900; }
+    .not-run li::before { content: "○"; color: var(--amber); }
+    .callout { padding: 20px 22px; border: 1px solid #efcf97; border-left: 5px solid var(--amber); border-radius: 12px; background: var(--amber-soft); }
+    .source-map { width: 100%; border-collapse: collapse; font-size: 0.91rem; }
+    .source-map th, .source-map td { padding: 11px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    .source-map th { color: var(--muted); font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; }
+    footer { padding: 24px 0 60px; color: var(--muted); border-top: 1px solid var(--line); font-size: 0.9rem; }
+    .hidden { display: none !important; }
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; gap: 18px; }
+      nav { position: static; display: flex; overflow-x: auto; gap: 3px; }
+      nav strong { display: none; }
+      nav a { white-space: nowrap; }
+      .metrics, .strengths { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 640px) {
+      .shell { width: min(100% - 22px, 1240px); }
+      .hero { padding-top: 34px; }
+      .verdict, .metrics, .intro-grid, .two-col, .use-grid, .finding-body, .checks, .strengths { grid-template-columns: 1fr; }
+      .finding-head { grid-template-columns: 1fr; }
+      .severity { width: fit-content; }
+      section { padding: 30px 0; }
+      .card { padding: 18px; }
+      .source-map { display: block; max-width: 100%; overflow-x: auto; }
+      .source-map th, .source-map td { min-width: 9rem; overflow-wrap: anywhere; }
+    }
+    @media print {
+      nav, .filters { display: none; }
+      body { background: white; }
+      .shell { width: 100%; }
+      .layout { display: block; }
+      section, .finding, .card { break-inside: avoid; box-shadow: none; }
+      details > * { display: block; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero shell">
+    <p class="eyebrow">Current working tree review</p>
+    <h1>Aveli is useful when choice is bounded.</h1>
+    <p class="lede">The framework turns a page into a finite action set, lets a model choose, and keeps execution in code. That is a strong base for adaptive development checks. It is not a safe general-purpose browser worker yet.</p>
+    <div class="verdict" aria-label="Review verdict">
+      <div class="yes">
+        <span class="tag observed">Good fit</span>
+        <h3>Development and staging checks</h3>
+        <p>Use it for read-only smoke tests, UI journey reproduction, and exploratory acceptance checks with independent verification.</p>
+      </div>
+      <div class="no">
+        <span class="tag" style="color:var(--red);background:var(--red-soft)">Not ready</span>
+        <h3>Unattended consequential production work</h3>
+        <p>Mechanical action classes cannot establish business intent. External approvals and soak evidence are also still open.</p>
+      </div>
+    </div>
+    <div class="metrics" aria-label="Review facts">
+      <div class="metric"><strong>14</strong><span>primary runtime source files</span></div>
+      <div class="metric"><strong>86</strong><span>offline tests passed</span></div>
+      <div class="metric"><strong>22</strong><span>real-Chrome guards passed</span></div>
+      <div class="metric"><strong>2</strong><span>execution boundaries</span></div>
+    </div>
+  </header>
+
+  <div class="shell layout">
+    <nav aria-label="Report sections">
+      <strong>On this page</strong>
+      <a href="#contract">Contract</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#strengths">What works</a>
+      <a href="#findings">Findings</a>
+      <a href="#uses">Development uses</a>
+      <a href="#adoption">Adoption plan</a>
+      <a href="#verification">Verification</a>
+      <a href="#sources">Source map</a>
+    </nav>
+
+    <main>
+      <section id="contract">
+        <p class="eyebrow">Scope</p>
+        <h2>What this review covers</h2>
+        <div class="intro-grid">
+          <article class="card">
+            <span class="tag">Fact</span>
+            <h3>Snapshot</h3>
+            <p>The review uses the current <code>internal-production-hardening</code> working tree, including modified and untracked files. It is not limited to commit <code>452c1ad</code>.</p>
+          </article>
+          <article class="card">
+            <span class="tag limit">Proof limit</span>
+            <h3>What was not run</h3>
+            <p>No paid model call, hosted CI run, Docker build, or 500-job soak test was performed. Media and generated graph data were inventoried, not treated as application logic.</p>
+          </article>
+        </div>
+        <p>This report covers the agent loop, inspector, production worker, policy, isolation, audit, tests, scripts, deployment files, and operator documentation. The <a href="framework-review.md">Markdown review</a> carries the full prose version. The <a href="codebase-graph.md">codebase graph</a> has the exhaustive file and call inventory.</p>
+      </section>
+
+      <section id="architecture">
+        <p class="eyebrow">System model</p>
+        <h2>One loop, two boundaries</h2>
+        <p>The core loop is small. The demo exposes it directly. The worker wraps it with policy, isolation, audit, and verification.</p>
+        <figure class="diagram">
+          <svg viewBox="0 0 1040 390" role="img" aria-labelledby="arch-title arch-desc">
+            <title id="arch-title">Aveli architecture flow</title>
+            <desc id="arch-desc">A natural-language goal enters a browser observation, then a TypeSafe choice, optional text helper, policy, browser execution, and independent verification. Demo and worker entry points share the agent loop.</desc>
+            <defs>
+              <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#7b8795"/></marker>
+              <filter id="s" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="5" stdDeviation="6" flood-opacity=".10"/></filter>
+            </defs>
+            <g fill="none" stroke="#7b8795" stroke-width="2.2" marker-end="url(#arrow)">
+              <path d="M155 196 H245"/><path d="M405 196 H485"/><path d="M645 196 H725"/><path d="M885 196 H968"/>
+              <path d="M565 148 V86 H690"/><path d="M768 108 V145"/>
+              <path d="M325 256 V318 H740"/><path d="M820 318 V254"/>
+            </g>
+            <g filter="url(#s)">
+              <rect x="20" y="148" width="135" height="96" rx="16" fill="#fffdf8" stroke="#d9d4c7"/><rect x="245" y="145" width="160" height="102" rx="16" fill="#e7f1f9" stroke="#145da0"/><rect x="485" y="145" width="160" height="102" rx="16" fill="#fffdf8" stroke="#d9d4c7"/><rect x="725" y="145" width="160" height="102" rx="16" fill="#e7f5ef" stroke="#177156"/><rect x="968" y="148" width="60" height="96" rx="16" fill="#fff0d6" stroke="#a25a00"/>
+              <rect x="690" y="34" width="156" height="74" rx="14" fill="#eee9fb" stroke="#6650a4"/><rect x="660" y="292" width="160" height="62" rx="14" fill="#fae9e7" stroke="#a73535"/>
+            </g>
+            <g text-anchor="middle" fill="#172235" font-family="system-ui, sans-serif">
+              <text x="87" y="184" font-size="14" font-weight="700">Goal</text><text x="87" y="208" font-size="12" fill="#5d6878">plain language</text>
+              <text x="325" y="181" font-size="14" font-weight="700">Observe</text><text x="325" y="203" font-size="12" fill="#5d6878">text + indexed controls</text><text x="325" y="222" font-size="12" fill="#5d6878">node identity + guards</text>
+              <text x="565" y="181" font-size="14" font-weight="700">Choose</text><text x="565" y="203" font-size="12" fill="#5d6878">operation + target heads</text><text x="565" y="222" font-size="12" fill="#5d6878">one TypeSafe request</text>
+              <text x="805" y="181" font-size="14" font-weight="700">Execute</text><text x="805" y="203" font-size="12" fill="#5d6878">policy + freshness</text><text x="805" y="222" font-size="12" fill="#5d6878">CDP browser input</text>
+              <text x="998" y="184" font-size="13" font-weight="700">Verify</text><text x="998" y="207" font-size="11" fill="#5d6878">URL</text><text x="998" y="225" font-size="11" fill="#5d6878">text</text>
+              <text x="768" y="64" font-size="13" font-weight="700">Text helper</text><text x="768" y="86" font-size="11" fill="#5d6878">TYPE_TEXT only</text>
+              <text x="740" y="318" font-size="13" font-weight="700">Worker boundary</text><text x="740" y="338" font-size="11" fill="#5d6878">isolation, audit, deadline</text>
+            </g>
+            <text x="28" y="332" fill="#5d6878" font-family="system-ui, sans-serif" font-size="12">Demo: loopback inspector around Agent</text>
+          </svg>
+          <figcaption><code>aveli</code> runs the loopback inspector. <code>aveli-internal-worker</code> reads one job, starts isolated Chrome, invokes <code>ProductionRunner</code>, writes audit events, prints one result, and exits.</figcaption>
+        </figure>
+        <div class="two-col" style="margin-top:16px">
+          <article class="card"><span class="tag">Core path</span><h3>Agent loop</h3><p><code>Agent</code> calls <code>model.choose</code>, prepares text only for <code>TYPE_TEXT</code>, calls <code>Browser.act</code>, records history, and observes again.</p></article>
+          <article class="card"><span class="tag">Production path</span><h3>Use-case orchestration</h3><p><code>worker.execute</code> enters <code>IsolatedChrome</code>. <code>ProductionRunner</code> checks policy and approval before it delegates to the same Agent.</p></article>
+        </div>
+      </section>
+
+      <section id="strengths">
+        <p class="eyebrow">Observed strengths</p>
+        <h2>The code keeps authority in the right place</h2>
+        <div class="strengths">
+          <article class="strength"><h3>Finite choices</h3><p>The model cannot emit selectors, coordinates, scripts, or shell commands.</p></article>
+          <article class="strength"><h3>One decision call</h3><p>Operation and speculative target heads share one observed state and one TypeSafe request.</p></article>
+          <article class="strength"><h3>No mutation retry</h3><p>The decision is consumed first. Execution history is written before the next observation.</p></article>
+          <article class="strength"><h3>Current-node checks</h3><p>Freshness, identity, visibility, enabled state, current geometry, and occlusion are checked.</p></article>
+          <article class="strength"><h3>Production shell</h3><p>Typed jobs, frozen approval proposals, isolated Chrome, budgets, audit, and verification stay outside Agent.</p></article>
+          <article class="strength"><h3>Evidence</h3><p>Offline tests and real-Chrome checks cover the highest-risk browser guard behavior.</p></article>
+        </div>
+      </section>
+
+      <section id="findings">
+        <p class="eyebrow">Prioritized review</p>
+        <h2>Seven findings</h2>
+        <p>Filter by severity. Each card separates the observed issue from the recommended change.</p>
+        <div class="filters" role="group" aria-label="Filter findings">
+          <button type="button" data-filter="all" aria-pressed="true">All <span>7</span></button>
+          <button type="button" data-filter="high" aria-pressed="false">High <span>2</span></button>
+          <button type="button" data-filter="medium" aria-pressed="false">Medium <span>4</span></button>
+          <button type="button" data-filter="low" aria-pressed="false">Low <span>1</span></button>
+        </div>
+        <p id="finding-count" class="eyebrow" aria-live="polite">Showing 7 findings</p>
+
+        <article class="finding" data-severity="high">
+          <div class="finding-head"><span class="severity high">High</span><div><h3>F1. Policy classifies browser mechanics, not business effects</h3><p class="summary">Most clicks become <code>interact</code>, even when page JavaScript deletes, sends, approves, submits, or navigates.</p></div></div>
+          <div class="finding-body"><div><span class="tag observed">Observed</span><p><code>snapshot.js</code> marks native links, downloads, and submits. <code>job.classify_action</code> treats other clicks as <code>interact</code>.</p></div><div><span class="tag recommend">Recommendation</span><p>Do not allow broad <code>interact</code> on consequential pages. Add workflow-owned semantic effects or a stable control allowlist.</p></div></div>
+          <details><summary>Evidence and impact</summary><div class="evidence"><span class="path">snapshot.js:63-67, job.py:251-269</span>. A post-action host check cannot undo a same-host side effect. The CONNECT proxy restricts destinations, not business intent.</div></details>
+        </article>
+
+        <article class="finding" data-severity="high">
+          <div class="finding-head"><span class="severity high">High</span><div><h3>F2. Provider data approval is global</h3><p class="summary">One environment flag enables provider transfer, but code does not bind approval to a workflow, host set, field set, or provider deployment.</p></div></div>
+          <div class="finding-body"><div><span class="tag observed">Observed</span><p>Goals, URLs, titles, visible page text, labels, values, and recent generated text cross the provider boundary.</p></div><div><span class="tag recommend">Recommendation</span><p>Deploy an immutable policy that names workflow ID, hosts, providers, and data classes. Reject jobs that do not match it.</p></div></div>
+          <details><summary>Evidence and impact</summary><div class="evidence"><span class="path">model.py:105-145 and 152-198, config.py:49-73</span>. Use synthetic accounts and non-secret data. A prompt rule is not a data-loss control.</div></details>
+        </article>
+
+        <article class="finding" data-severity="medium">
+          <div class="finding-head"><span class="severity medium">Medium</span><div><h3>F3. The proxy checks hostnames, not resolved addresses</h3><p class="summary">An allowed DNS name can resolve to a private, loopback, link-local, multicast, or reserved address.</p></div></div>
+          <div class="finding-body"><div><span class="tag observed">Observed</span><p>The proxy checks the requested hostname and then passes that name to <code>socket.create_connection</code>.</p></div><div><span class="tag recommend">Recommendation</span><p>Validate resolved addresses and connect to an approved result. Keep platform egress policy as a second control.</p></div></div>
+          <details><summary>Evidence and impact</summary><div class="evidence"><span class="path">network.py:23-35</span>. Add DNS-rebinding and private-address tests before the worker can reach private networks.</div></details>
+        </article>
+
+        <article class="finding" data-severity="medium">
+          <div class="finding-head"><span class="severity medium">Medium</span><div><h3>F4. Exact model pinning is only partly enforced</h3><p class="summary">The validator rejects names ending in <code>latest</code>. Other mutable aliases still pass.</p></div></div>
+          <div class="finding-body"><div><span class="tag observed">Observed</span><p>The validation rule does not prove that a provider model or deployment ID is immutable.</p></div><div><span class="tag recommend">Recommendation</span><p>Use provider-specific approved IDs. Record the provider-returned model ID in audit and result metadata.</p></div></div>
+          <details><summary>Evidence and impact</summary><div class="evidence"><span class="path">config.py:21-25</span>. Silent provider changes weaken reproducibility and make regressions harder to attribute.</div></details>
+        </article>
+
+        <article class="finding" data-severity="medium">
+          <div class="finding-head"><span class="severity medium">Medium</span><div><h3>F5. The central state machine uses implicit dictionary contracts</h3><p class="summary">Page, action, decision, and history fields cross JavaScript and Python without a machine-checked schema.</p></div></div>
+          <div class="finding-body"><div><span class="tag observed">Observed</span><p><code>Agent.command</code> has AST complexity 29. <code>browser_operation</code> has complexity 17. New operations touch several modules.</p></div><div><span class="tag recommend">Recommendation</span><p>Define typed cross-module contracts and split terminal, text, mutation, and observation transitions before adding browser features.</p></div></div>
+          <details><summary>Evidence and impact</summary><div class="evidence"><span class="path">agent.py:66-181, browser.py:141-226</span>. Tests contain the current risk, but frames, popups, uploads, and keyboard operations will multiply branches.</div></details>
+        </article>
+
+        <article class="finding" data-severity="medium">
+          <div class="finding-head"><span class="severity medium">Medium</span><div><h3>F6. The release candidate is not in a published Git revision</h3><p class="summary">The branch still points at <code>main</code>. Production files, CI, tests, and deployment material are modified or untracked.</p></div></div>
+          <div class="finding-body"><div><span class="tag observed">Observed</span><p>Local checks pass, but another checkout does not receive this worker and hosted CI has not exercised it.</p></div><div><span class="tag recommend">Recommendation</span><p>Review and commit one coherent patch. Run hosted CI, build the image, and record its content digest.</p></div></div>
+          <details><summary>Evidence and impact</summary><div class="evidence">Gate R5 is open. Data approval, procurement, workflow ownership, and 500-job soak evidence are also open external gates.</div></details>
+        </article>
+
+        <article class="finding" data-severity="low">
+          <div class="finding-head"><span class="severity low">Low</span><div><h3>F7. The runbook overstates final observation freshness</h3><p class="summary">The runtime validates the stored page against a live semantic marker, then verifies the stored page. It does not take a new observation.</p></div></div>
+          <div class="finding-body"><div><span class="tag observed">Observed</span><p>The check is useful, but the runbook calls it a "fresh observation," which is not the implemented mechanism.</p></div><div><span class="tag recommend">Recommendation</span><p>Reobserve after <code>DONE</code>, or state that verification uses a freshness-validated stored observation. Add a race regression.</p></div></div>
+          <details><summary>Evidence and impact</summary><div class="evidence"><span class="path">agent.py:107-114, runner.py:152-160, internal-production.md:11</span>. Verification claims should describe the release boundary exactly.</div></details>
+        </article>
+      </section>
+
+      <section id="uses">
+        <p class="eyebrow">Development use</p>
+        <h2>Where the framework earns its cost</h2>
+        <div class="use-grid">
+          <article class="card use-card"><span class="tag fit strong">Strong</span><h3>Adaptive preview smoke checks</h3><p>Confirm that a deployed feature is reachable and visibly ready even when selectors or layout move.</p></article>
+          <article class="card use-card"><span class="tag fit strong">Strong</span><h3>UI journey reproduction</h3><p>Replay a human goal against a known application revision and retain action history plus verifier evidence.</p></article>
+          <article class="card use-card"><span class="tag fit strong">Strong</span><h3>Exploratory acceptance checks</h3><p>Use the agent to find a route through a changing interface. An engineer inspects failures and unexpected paths.</p></article>
+          <article class="card use-card"><span class="tag fit conditional">Conditional</span><h3>Generated form input</h3><p>Use only synthetic, non-secret values in a disposable environment. Put submit behind separate policy.</p></article>
+          <article class="card use-card"><span class="tag fit conditional">Conditional</span><h3>Pull-request gate</h3><p>Start as a non-blocking check. Make it required only after the team measures variance and false results.</p></article>
+          <article class="card use-card"><span class="tag fit poor">Poor</span><h3>Consequential production work</h3><p>Payments, messages, deletes, account changes, and approvals need business-semantic authorization that is not present.</p></article>
+          <article class="card use-card"><span class="tag fit poor">Poor today</span><h3>Complex browser surfaces</h3><p>Canvas, closed shadow roots, nested frames, uploads, popups, and arbitrary keyboard widgets are outside the action model.</p></article>
+          <article class="card use-card"><span class="tag fit poor">Wrong tool</span><h3>Deterministic test layers</h3><p>Keep unit, API, component, accessibility, and visual-diff tests in purpose-built tools.</p></article>
+        </div>
+        <div class="callout" style="margin-top:18px"><strong>Local development needs a separate boundary.</strong> The production <code>JobSpec</code> rejects loopback and plain HTTP. Do not weaken that rule. Add a test-only isolated runner that permits local targets and blocks external egress.</div>
+      </section>
+
+      <section id="adoption">
+        <p class="eyebrow">Implementation path</p>
+        <h2>Start with one read-only workflow</h2>
+        <ol class="steps">
+          <li><div><strong>Name the workflow.</strong><br>Use one preview-deployment check with an exact goal, host set, action set, and verifier.</div></li>
+          <li><div><strong>Use synthetic state.</strong><br>Create a disposable account or read-only page. Keep secrets and customer data out of provider context.</div></li>
+          <li><div><strong>Run one container per job.</strong><br>Preserve the current process ownership model. Do not turn the runner into a threaded multi-tenant service.</div></li>
+          <li><div><strong>Verify outside the model.</strong><br>Check visible state and, when possible, an application API or database read model.</div></li>
+          <li><div><strong>Collect shadow evidence.</strong><br>Record image digest, app revision, model IDs, result, action count, latency, cost, and failure class.</div></li>
+          <li><div><strong>Promote with measured criteria.</strong><br>Keep the check non-blocking until the workflow corpus shows stable verified results and acceptable cost.</div></li>
+        </ol>
+        <h3 style="margin-top:26px">Example preview job</h3>
+        <pre aria-label="Example Aveli development job"><code>{
+  "schema_version": 1,
+  "job_id": "preview-abc123",
+  "url": "https://preview.dev.example/releases/abc123",
+  "goal": "Confirm build abc123 is Ready and no failure banner is visible.",
+  "allowed_hosts": ["preview.dev.example"],
+  "allowed_actions": ["navigate", "scroll", "wait"],
+  "approval_required_actions": [],
+  "verification": {
+    "url_prefix": "https://preview.dev.example/releases/abc123",
+    "title_contains": ["Release"],
+    "required_text": ["abc123", "Ready"],
+    "forbidden_text": ["Build failed", "Deployment failed"]
+  },
+  "timeout_seconds": 60,
+  "max_actions": 12
+}</code></pre>
+        <div class="two-col">
+          <article class="card"><span class="tag recommend">Do first</span><h3>Controls that widen safe use</h3><ul><li>Workflow-bound provider approval</li><li>Semantic action policy</li><li>Resolved-address network checks</li><li>Pluggable authoritative verifier</li><li>Hosted image and CI evidence</li></ul></article>
+          <article class="card"><span class="tag">Then</span><h3>Engineering improvements</h3><ul><li>Typed page and action contracts</li><li>Versioned workflow corpus</li><li>Immutable model ID recording</li><li>Failure taxonomy and dashboard</li><li>Feature work driven by corpus failures</li></ul></article>
+        </div>
+      </section>
+
+      <section id="verification">
+        <p class="eyebrow">Evidence</p>
+        <h2>What passed, and what remains open</h2>
+        <div class="checks">
+          <article class="card">
+            <span class="tag observed">Passed</span>
+            <h3>Repository and browser checks</h3>
+            <ul class="check-list">
+              <li>Ruff lint</li>
+              <li>86 pytest cases</li>
+              <li>Both JavaScript syntax checks</li>
+              <li>Wheel and source build</li>
+              <li>Deployment static check</li>
+              <li>Worker policy smoke</li>
+              <li>Secret scan</li>
+              <li>OSV scan of 22 locked packages</li>
+              <li>22 real-Chrome guard checks</li>
+              <li>Real-Chrome loopback denial probe</li>
+              <li>Structural report freshness check</li>
+            </ul>
+          </article>
+          <article class="card">
+            <span class="tag limit">Not proved</span>
+            <h3>External and live evidence</h3>
+            <ul class="check-list not-run">
+              <li>Paid TypeSafe and text-model task</li>
+              <li>Hosted GitHub Actions run</li>
+              <li>Docker image build and digest</li>
+              <li>Allowed-host TLS tunnel path</li>
+              <li>Provider data and legal approval</li>
+              <li>Named workflow owner and on-call</li>
+              <li>500-job, 14-day soak gate</li>
+              <li>99% verified success threshold</li>
+            </ul>
+          </article>
+        </div>
+        <p class="callout" style="margin-top:16px"><strong>Interpretation.</strong> Passing mechanics tests support the browser safety claims they exercise. They do not establish live task reliability, business authorization, or production readiness.</p>
+      </section>
+
+      <section id="sources">
+        <p class="eyebrow">Coverage map</p>
+        <h2>Where each conclusion comes from</h2>
+        <table class="source-map">
+          <thead><tr><th>Area</th><th>Primary source</th><th>Role in the review</th></tr></thead>
+          <tbody>
+            <tr><td>Agent state machine</td><td><code>agent.py</code>, <code>questions.py</code></td><td>Decision lifecycle, text cache, budgets, terminal state</td></tr>
+            <tr><td>Browser boundary</td><td><code>browser.py</code>, <code>snapshot.js</code></td><td>Observation, node identity, freshness, CDP execution</td></tr>
+            <tr><td>Provider boundary</td><td><code>model.py</code></td><td>Action space, fan-out questions, text generation, sent data</td></tr>
+            <tr><td>Production contract</td><td><code>job.py</code>, <code>config.py</code>, <code>runner.py</code></td><td>Policy, approval, model config, deadlines, verification</td></tr>
+            <tr><td>Isolation and audit</td><td><code>isolation.py</code>, <code>network.py</code>, <code>audit.py</code>, <code>worker.py</code></td><td>Process ownership, egress proxy, logs, CLI result</td></tr>
+            <tr><td>Inspector</td><td><code>demo.py</code>, <code>static/</code></td><td>Loopback HTTP API, visual trace, demo fixtures</td></tr>
+            <tr><td>Evidence</td><td><code>tests/</code>, <code>scripts/</code>, <code>.github/workflows/ci.yml</code></td><td>Offline, real-browser, deployment, and security checks</td></tr>
+            <tr><td>Operating claims</td><td><code>README.md</code>, <code>docs/</code>, <code>gates/</code>, <code>PLAN.md</code></td><td>Scope, measured performance, runbook, open release gates</td></tr>
+          </tbody>
+        </table>
+        <p style="margin-top:18px">The structural diagnostic reports 1.53% duplicate-line coverage in tracked source. It excludes the untracked production modules, so this report does not use it as a whole-tree quality score. Generated graph JSON also distorts repository-wide clone counts and was kept separate.</p>
+      </section>
+    </main>
+  </div>
+
+  <footer class="shell">
+    <p><strong>Recommendation:</strong> use Aveli as an adaptive browser-checking layer for development and staging. Keep the first workflows narrow, read-only, independently verified, and non-blocking.</p>
+    <p><a href="framework-review.md">Read the Markdown report</a> · <a href="codebase-graph.md">Open the full codebase graph</a></p>
+  </footer>
+
+  <script>
+    (() => {
+      const buttons = [...document.querySelectorAll('[data-filter]')];
+      const findings = [...document.querySelectorAll('.finding')];
+      const output = document.getElementById('finding-count');
+      for (const button of buttons) {
+        button.addEventListener('click', () => {
+          const filter = button.dataset.filter;
+          for (const item of buttons) item.setAttribute('aria-pressed', String(item === button));
+          let shown = 0;
+          for (const finding of findings) {
+            const visible = filter === 'all' || finding.dataset.severity === filter;
+            finding.classList.toggle('hidden', !visible);
+            if (visible) shown += 1;
+          }
+          output.textContent = `Showing ${shown} ${shown === 1 ? 'finding' : 'findings'}`;
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

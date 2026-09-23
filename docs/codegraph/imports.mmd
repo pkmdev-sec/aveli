@@ -1,0 +1,96 @@
+flowchart LR
+  f0["aveli/__init__.py"]
+  f1["aveli/agent.py"]
+  f2["aveli/audit.py"]
+  f3["aveli/browser.py"]
+  f4["aveli/config.py"]
+  f5["aveli/demo.py"]
+  f6["aveli/isolation.py"]
+  f7["aveli/job.py"]
+  f8["aveli/model.py"]
+  f9["aveli/moli.py"]
+  f10["aveli/network.py"]
+  f11["aveli/questions.py"]
+  f12["aveli/runner.py"]
+  f13["aveli/worker.py"]
+  f14["examples/flights.py"]
+  f15["examples/run.py"]
+  f16["scripts/check_deployment.py"]
+  f17["scripts/check_guards.py"]
+  f18["scripts/check_moli.py"]
+  f19["scripts/check_network_isolation.py"]
+  f20["scripts/check_secrets.py"]
+  f21["scripts/check_vulnerabilities.py"]
+  f22["scripts/container_healthcheck.py"]
+  f23["scripts/measure_flights.py"]
+  f24["scripts/record_flights.py"]
+  f25["scripts/render_demo.py"]
+  f26["scripts/render_fixture.py"]
+  f27["scripts/run_isolated_checks.py"]
+  f28["scripts/smoke.py"]
+  f29["scripts/smoke_worker.py"]
+  f30["tests/test_agent.py"]
+  f31["tests/test_browser.py"]
+  f32["tests/test_config.py"]
+  f33["tests/test_isolation.py"]
+  f34["tests/test_job.py"]
+  f35["tests/test_moli.py"]
+  f36["tests/test_network.py"]
+  f37["tests/test_runner.py"]
+  f38["tests/test_worker.py"]
+  f0 --> f1
+  f0 --> f3
+  f0 --> f7
+  f0 --> f12
+  f1 --> f3
+  f1 --> f8
+  f1 --> f11
+  f5 --> f1
+  f5 --> f11
+  f6 --> f10
+  f8 --> f11
+  f9 --> f6
+  f12 --> f1
+  f12 --> f2
+  f12 --> f4
+  f12 --> f6
+  f12 --> f7
+  f13 --> f2
+  f13 --> f4
+  f13 --> f6
+  f13 --> f7
+  f13 --> f12
+  f14 --> f0
+  f15 --> f0
+  f17 --> f3
+  f18 --> f3
+  f18 --> f9
+  f19 --> f6
+  f22 --> f6
+  f23 --> f0
+  f23 --> f3
+  f23 --> f14
+  f24 --> f0
+  f24 --> f14
+  f27 --> f6
+  f28 --> f0
+  f28 --> f5
+  f29 --> f6
+  f29 --> f12
+  f29 --> f13
+  f30 --> f1
+  f30 --> f3
+  f30 --> f8
+  f30 --> f14
+  f31 --> f3
+  f32 --> f4
+  f33 --> f6
+  f34 --> f7
+  f35 --> f9
+  f36 --> f10
+  f37 --> f4
+  f37 --> f7
+  f37 --> f12
+  f37 --> f13
+  f38 --> f7
+  f38 --> f13

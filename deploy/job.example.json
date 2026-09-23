@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "job_id": "internal-search-001",
+  "url": "https://internal.example/search",
+  "goal": "Find the approved record and stop when its details are visible.",
+  "allowed_hosts": ["internal.example"],
+  "allowed_actions": ["navigate", "interact", "type_text", "select", "scroll", "wait"],
+  "approval_required_actions": ["submit"],
+  "verification": {
+    "url_prefix": "https://internal.example/results",
+    "required_text": ["Approved record"],
+    "forbidden_text": ["No records found"]
+  },
+  "timeout_seconds": 90,
+  "max_actions": 30
+}
