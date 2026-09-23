@@ -1,23 +1,14 @@
 <img src="docs/aveli-logo.png" alt="Aveli pixel logo" width="960" />
-[![CI](https://github.com/pkmdev-sec/aveli/actions/workflows/ci.yml/badge.svg)](https://github.com/pkmdev-sec/aveli/actions/workflows/ci.yml)
-[![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
-[![MIT license](https://img.shields.io/badge/license-MIT-2A743F)](LICENSE)
-
-Aveli is a Python browser agent that lets models choose from controls already found on the page. [TypeSafe's Jev](https://docs.typesafe.ai/introduction) selects an operation and a compatible target. A separate text model writes content only for `TYPE_TEXT`.
-
-The measured Google Flights run completed a Zurich-to-London search in 7.073 seconds. The raw measurements include model calls, browser work, and page-load waits.
-
-[Read the measurements](docs/performance.md) · [Inspect the agent loop](aveli/agent.py)
 
 ## How Aveli works
 
 Each observation produces an indexed table of visible controls:
 
 ```text
-[1] button    Change ticket type · Round trip
-[2] combobox  Where from?        · San Francisco
-[3] combobox  Where to?          · empty
-[4] textbox   Departure          · empty
+[1] textbox   Search             · empty
+[2] button    Run search         · visible
+[3] checkbox  Include archived   · unchecked
+[4] link      Result title       · visible
 ```
 
 Aveli supports `CLICK`, `TYPE_TEXT`, `SELECT`, `SCROLL_UP`, `SCROLL_DOWN`, `WAIT`, `DONE`, and `BLOCKED`. The model receives only targets that support the proposed operation. It never emits selectors, coordinates, JavaScript, or shell commands.
@@ -79,9 +70,8 @@ See [configuration and development](docs/development.md) for provider settings, 
 from aveli import Agent
 
 with Agent(
-    "https://www.google.com/travel/flights?hl=en",
-    "Find one-way flights from Zurich to London on September 20, 2026, "
-    "for one adult in economy. Stop when matching flight options are visible.",
+    "https://en.wikipedia.org/wiki/Main_Page",
+    "Find and open the article about Gödel's incompleteness theorems.",
 ) as agent:
     for state in agent.run():
         print(state["elapsed_ms"], state["status"])
@@ -109,12 +99,6 @@ The DOM reader supports common HTML and ARIA controls. It does not yet support s
 
 The inspector is not a production service. Bounded internal jobs use a separate fail-closed worker with host and action policy, isolated Chrome, audit events, approval hooks, and independent verification. See the [internal production runbook](docs/internal-production.md).
 
-## Evidence
-
-Six matched comparison runs passed, but they cover one task on one browser profile. They do not establish general browser-agent reliability.
-
-The full report records model versions, source hashes, timings, failures, and measurement boundaries in [docs/performance.md](docs/performance.md).
-
 ## Project map
 
 | Area | Source |
@@ -140,6 +124,6 @@ Contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) before openin
 
 ## Documentation
 
-[Documentation index](docs/README.md) · [Design](docs/design.md) · [Configuration and development](docs/development.md) · [Performance](docs/performance.md) · [Internal production](docs/internal-production.md)
+[Documentation index](docs/README.md) · [Design](docs/design.md) · [Configuration and development](docs/development.md) · [Internal production](docs/internal-production.md)
 
 Built with [Browser Use](https://github.com/browser-use/browser-use), [Browser Harness](https://github.com/browser-use/browser-harness), and [TypeSafe speculative fan-out](https://docs.typesafe.ai/patterns/fan-out).

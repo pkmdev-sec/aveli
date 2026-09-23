@@ -61,18 +61,6 @@ uv run python scripts/check_guards.py
 
 The guard suite uses local fixtures and does not call model APIs.
 
-## Record a run
-
-Live examples and recording scripts call paid model APIs.
-
-Record a new Google Flights run into a new directory:
-
-```bash
-uv run --env-file .env python scripts/record_flights.py artifacts/flights/new-run
-```
-
-Raw recordings and credentials remain ignored by Git. Publish media only when the recording and its visual design were produced for Aveli and the final page was verified independently.
-
 ## Probe Moli compatibility
 
 Moli is experimental and does not replace the default Chrome runtime. Install Moli 1.1.9, then run:

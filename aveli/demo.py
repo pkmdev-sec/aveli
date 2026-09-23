@@ -52,17 +52,15 @@ def close_browser():
 def command(name, body):
     global AGENT
     if name == "reset":
-        scenario = body.get("scenario", "flights")
-        if scenario not in {"travel", "research", "flights"}:
+        scenario = body.get("scenario", "travel")
+        if scenario not in {"travel", "research"}:
             raise ValueError("Unknown demo scenario")
         goal = body.get("goal", "").strip()
         if not goal or len(goal) > 2000:
             raise ValueError("Enter 1–2,000 characters")
         close_browser()
         AGENT = Agent(
-            "https://www.google.com/travel/flights?hl=en"
-            if scenario == "flights"
-            else f"{ORIGIN}/fixture.html?scenario={scenario}",
+            f"{ORIGIN}/fixture.html?scenario={scenario}",
             goal,
             screenshots=True,
             record_dir=Path.cwd() / "artifacts" / "frames"
