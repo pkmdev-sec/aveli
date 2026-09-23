@@ -6,14 +6,14 @@ ARG UV_WHEEL_SHA256=82978155e571f2ac3dd57077bd746bfe41b65fa19accc3c92d1f09632cd3
 ARG CHROME_DEB_URL=https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_153.0.8010.52-1_amd64.deb
 ARG CHROME_DEB_SHA256=29e0e4b5af01213915ffdb7f4e49a11956dc5fc591165c85af8688dcdff907ac
 
-RUN python -c 'import sys,urllib.request; urllib.request.urlretrieve(sys.argv[1], sys.argv[2])' "${UV_WHEEL_URL}" /tmp/uv.whl \
+RUN python -c 'import sys,urllib.request; urllib.request.urlretrieve(sys.argv[1], sys.argv[2])' "${UV_WHEEL_URL}" /tmp/uv-0.10.4-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl \
     && python -c 'import sys,urllib.request; urllib.request.urlretrieve(sys.argv[1], sys.argv[2])' "${CHROME_DEB_URL}" /tmp/chrome.deb \
-    && echo "${UV_WHEEL_SHA256}  /tmp/uv.whl" | sha256sum --check --strict \
+    && echo "${UV_WHEEL_SHA256}  /tmp/uv-0.10.4-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl" | sha256sum --check --strict \
     && echo "${CHROME_DEB_SHA256}  /tmp/chrome.deb" | sha256sum --check --strict \
     && apt-get update \
     && apt-get install -y --no-install-recommends /tmp/chrome.deb \
-    && pip install --no-cache-dir /tmp/uv.whl \
-    && rm -f /tmp/uv.whl /tmp/chrome.deb \
+    && pip install --no-cache-dir /tmp/uv-0.10.4-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl \
+    && rm -f /tmp/uv-0.10.4-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl /tmp/chrome.deb \
     && rm -rf /var/lib/apt/lists/*
 
 RUN useradd --create-home --uid 10001 aveli
